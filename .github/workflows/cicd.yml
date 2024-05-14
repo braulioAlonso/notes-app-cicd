@@ -1,43 +1,42 @@
 name: Build and publish docker image update
 
 on:
-    push:
-        tags:
-          - 'V*'
+  push:
+    tags:
+      - 'V*'
     
-    workflow_dispatch: 
+  workflow_dispatch: 
 
 jobs:
-    build-push-docker-image: 
-      name: Build and push docker image to amazon ECR
-      runs-on: ubuntu-latest
+  build-push-docker-image: 
+    name: Build and push docker image to amazon ECR
+    runs-on: ubuntu-latest
       
-      steps:
-        - name: Repository checkout 
-          uses: actions/checkout@v4
+    steps:
+      - name: Repository checkout 
+        uses: actions/checkout@v4
 
-        - name: Install dependencies 
-          run: npm install 
+      - name: Install dependencies 
+        run: npm install 
 
-        - name: Run test
-          run: npm test
+      - name: Run test
+        run: npm test
 
-        - name: Configure AWS credentials 
-          uses: aws-actions/configure-aws-credentials@v4
-          with: 
-            aws-access-key-id: ${{secrets.AWS_ECR_ACCESS_KEY}}
-            aws-secret-access-key: ${{secrets.AWS_ECR_SECRET_ACCESS_KEY}}
-            aws-region: ${{env.AWS_ECR_REGION}}
+      - name: Configure AWS credentials 
+        uses: aws-actions/configure-aws-credentials@v4
+        with: 
+          aws-access-key-id: ${{secrets.AWS_ECR_ACCESS_KEY}}
+          aws-secret-access-key: ${{secrets.AWS_ECR_SECRET_ACCESS_KEY}}
+          aws-region: ${{env.AWS_ECR_REGION}}
         
-        - name: Login to Amazon ECR
-          id: login-ecr
-          uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
         
-        - name: Build and push of Docker image to Amazon ECR
-          env: 
-            ECR_REGISTRY: ${{steps.login-ecr.outputs.registry}}
-            ECR_REPOSITORY: notes-app-cicd
-          run: |
-            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:V1.0 -f Dockerfile
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:V1.0
-
+      - name: Build and push of Docker image to Amazon ECR
+        env: 
+          ECR_REGISTRY: ${{steps.login-ecr.outputs.registry}}
+          ECR_REPOSITORY: notes-app-cicd
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:V1.0 -f Dockerfile
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:V1.0
